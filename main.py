@@ -5,11 +5,11 @@ FAC Academy | Mid-Term Project
 Run: python3 main.py
 """
 
-from utils.patient     import PatientManager
-from utils.doctor      import DoctorManager
-from utils.appointment import AppointmentManager
+from utils.patient_ops     import PatientManager
+from utils.doctor_ops      import DoctorManager
+from utils.appointment_ops import AppointmentManager
 from utils.billing     import BillingManager
-from utils.ward        import WardManager
+from utils.ward_ops        import WardManager
 
 # Single shared DB file for all managers
 DB = 'hospital.db'
