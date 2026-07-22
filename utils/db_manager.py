@@ -56,6 +56,7 @@ class HospitalDB:
                 CREATE TABLE IF NOT EXISTS bills (
                     bill_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     patient_id INTEGER,
+                    item TEXT,
                     amount REAL,
                     payment_status TEXT DEFAULT 'Unpaid',
                     FOREIGN KEY(patient_id) REFERENCES patients(patient_id)
@@ -172,19 +173,86 @@ class HospitalDB:
       print(f"  ✗ Error fetching appointments: {e}")
       return []
 
-  # ==================== BILLING CRUD ====================
-  def generate_bill(self, patient_id, amount):
+  def get_patient_appointments(self, patient_id):
+    """Retrieve appointments specific to a single patient."""
+    try:
+      with self.connect() as conn:
+        return conn.execute(
+            """
+                    SELECT a.appointment_id, d.name AS doctor_name, 
+                           a.appointment_date, a.appointment_time, a.reason, a.status 
+                    FROM appointments a
+                    JOIN doctors d ON a.doctor_id = d.doctor_id
+                    WHERE a.patient_id = ?
+                """,
+            (patient_id,),
+        ).fetchall()
+    except Exception as e:
+      print(f"  ✗ Error fetching patient appointments: {e}")
+      return []
+
+  def update_appointment_status(self, appointment_id, status):
+    """Update the status of an appointment (e.g., Completed, Cancelled)."""
     try:
       with self.connect() as conn:
         conn.execute(
-            "INSERT INTO bills (patient_id, amount, payment_status) VALUES"
-            " (?, ?, 'Unpaid')",
-            (patient_id, amount),
+            "UPDATE appointments SET status = ? WHERE appointment_id = ?",
+            (status, appointment_id),
         )
         conn.commit()
-        print(f"  ✓ Bill of ${amount} generated for Patient ID {patient_id}.")
+        print(f"  ✓ Appointment ID {appointment_id} status updated to {status}.")
+    except Exception as e:
+      print(f"  ✗ Error updating appointment status: {e}")
+
+  # ==================== BILLING CRUD ====================
+  def generate_bill(self, patient_id, item, amount):
+    try:
+      with self.connect() as conn:
+        conn.execute(
+            "INSERT INTO bills (patient_id, item, amount, payment_status) VALUES"
+            " (?, ?, ?, 'Unpaid')",
+            (patient_id, item, amount),
+        )
+        conn.commit()
+        print(
+            f"  ✓ Bill item '{item}' (${amount}) generated for Patient ID"
+            f" {patient_id}."
+        )
     except Exception as e:
       print(f"  ✗ Error generating bill: {e}")
+
+  def get_patient_bills(self, patient_id):
+    """Retrieve all bill records for a specific patient."""
+    try:
+      with self.connect() as conn:
+        return conn.execute(
+            "SELECT * FROM bills WHERE patient_id = ?", (patient_id,)
+        ).fetchall()
+    except Exception as e:
+      print(f"  ✗ Error fetching patient bills: {e}")
+      return []
+
+  def get_all_bills(self):
+    """Retrieve all bills across the system."""
+    try:
+      with self.connect() as conn:
+        return conn.execute("SELECT * FROM bills").fetchall()
+    except Exception as e:
+      print(f"  ✗ Error fetching all bills: {e}")
+      return []
+
+  def mark_bill_paid(self, patient_id):
+    """Mark all bills belonging to a specific patient as Paid."""
+    try:
+      with self.connect() as conn:
+        conn.execute(
+            "UPDATE bills SET payment_status = 'Paid' WHERE patient_id = ?",
+            (patient_id,),
+        )
+        conn.commit()
+        print(f"  ✓ All bills for Patient ID {patient_id} marked as Paid.")
+    except Exception as e:
+      print(f"  ✗ Error updating payment status: {e}")
 
   def pay_bill(self, bill_id):
     try:
