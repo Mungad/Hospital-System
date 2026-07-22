@@ -1,0 +1,12 @@
+# Hospital Management System — Requirements
+# No external packages required.
+# All dependencies are part of the Python standard library.
+#
+# Built-in modules used:
+#   sqlite3   — database connectivity
+#   datetime  — date/time handling
+#
+# Python version: 3.8+
+#
+# To run the project:
+#   python main.py
