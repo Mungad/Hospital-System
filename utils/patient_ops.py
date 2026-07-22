@@ -75,7 +75,7 @@ def register_patient():
 
 
 def view_patients():
-    """Read/View all patient records using the polymorphic describe method."""
+    #Read and view all the patients
     print("\n--- Active Patient Profiles ---")
     try:
         with db_manager._conn() as conn:
@@ -178,7 +178,7 @@ def update_patient():
 
 
 def delete_patient():
-    """Delete/Discharge a patient and free up a bed space in their assigned ward."""
+    #Delete the patient
     print("\n--- Discharge / Delete Patient Record ---")
     try:
         pid = int(input("Enter Patient ID to discharge: "))
@@ -199,8 +199,8 @@ def delete_patient():
             # Reclaim bed space back to the ward
             cursor.execute("UPDATE wards SET available_beds = available_beds + 1 WHERE name = ?", (assigned_ward,))
             conn.commit()
-            print("[+] Patient successfully discharged; ward bed reclaimed.")
+            print("Patient successfully discharged; ward bed reclaimed.")
     except ValueError:
-        print("[-] Error: ID must be an integer value.")
+        print("Error: ID must be an integer value.")
     except sqlite3.Error as e:
-        print(f"[-] Database Error: {e}")
+        print(f"Database Error: {e}")
